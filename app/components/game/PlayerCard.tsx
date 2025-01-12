@@ -65,8 +65,8 @@ export default function PlayerCard({
   };
 
   return (
-    <div className="bg-[#1A1B1E]/95 backdrop-blur-sm rounded-2xl p-4 flex flex-col h-full border border-gray-800/50 shadow-xl">
-      {/* Player Info Section - Reduce vertical spacing */}
+    <div className="bg-[#1A1B1E]/95 backdrop-blur-sm rounded-2xl p-4 border border-gray-800/50 shadow-xl h-full flex flex-col">
+      {/* Player Info Section */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 rounded-full bg-[#FF4500] flex items-center justify-center text-white font-bold">
@@ -83,7 +83,7 @@ export default function PlayerCard({
         </div>
       </div>
 
-      {/* Status Section - Compact version */}
+      {/* Status Section */}
       <div className="mb-3">
         <PlayerStatus 
           isActive={isActive}
@@ -93,13 +93,38 @@ export default function PlayerCard({
         />
       </div>
 
-      {/* Dice Section - Make it proportional */}
-      <div className="w-full aspect-square max-h-[240px] mx-auto mb-3">
-        <Dice value={diceValue} isRolling={isRolling} />
+      {/* Dice Section - Centered with frame */}
+      <div className="relative w-full aspect-square max-h-[200px] mx-auto mb-4 flex items-center justify-center">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1E2024] to-[#141619] rounded-2xl" />
+        
+        {/* Corner Accents */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-0 w-6 h-6">
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#FFD700]/40 to-transparent" />
+            <div className="absolute top-0 left-0 h-full w-[2px] bg-gradient-to-b from-[#FFD700]/40 to-transparent" />
+          </div>
+          <div className="absolute top-0 right-0 w-6 h-6">
+            <div className="absolute top-0 right-0 w-full h-[2px] bg-gradient-to-l from-[#FFD700]/40 to-transparent" />
+            <div className="absolute top-0 right-0 h-full w-[2px] bg-gradient-to-b from-[#FFD700]/40 to-transparent" />
+          </div>
+          <div className="absolute bottom-0 left-0 w-6 h-6">
+            <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#FFD700]/40 to-transparent" />
+            <div className="absolute bottom-0 left-0 h-full w-[2px] bg-gradient-to-t from-[#FFD700]/40 to-transparent" />
+          </div>
+          <div className="absolute bottom-0 right-0 w-6 h-6">
+            <div className="absolute bottom-0 right-0 w-full h-[2px] bg-gradient-to-l from-[#FFD700]/40 to-transparent" />
+            <div className="absolute bottom-0 right-0 h-full w-[2px] bg-gradient-to-t from-[#FFD700]/40 to-transparent" />
+          </div>
+        </div>
+
+        {/* Dice Container */}
+        <div className="relative w-2/5 aspect-square">
+          <Dice value={diceValue} isRolling={isRolling} />
+        </div>
       </div>
 
-      {/* Betting Controls - More compact */}
-      <div className="mt-auto">
+      {/* Controls Section */}
+      <div className="mt-auto space-y-3">
         <BetControls
           currentBet={currentBet}
           minBet={0.1}
@@ -108,20 +133,20 @@ export default function PlayerCard({
           onBetChange={handleBetChange}
           disabled={hasRolled || !isActive}
         />
-
+        
         <button
           onClick={handleRoll}
           disabled={!isActive || hasRolled || currentBet > balance}
-          className="w-full mt-3 bg-[#FFD700] text-gray-900 py-2 rounded-lg font-bold 
-            hover:bg-[#FFD700]/90 active:scale-95
+          className="w-full bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-gray-900 py-2 rounded-lg font-bold 
+            hover:shadow-lg hover:shadow-[#FFD700]/20 active:scale-95
             transition-all duration-200 
-            disabled:opacity-50 disabled:hover:bg-[#FFD700] disabled:active:scale-100"
+            disabled:opacity-50 disabled:hover:shadow-none disabled:active:scale-100"
         >
           {hasRolled ? 'Rolled' : 'Roll Dice'}
         </button>
 
-        {/* Stats - Enhanced grid */}
-        <div className="grid grid-cols-4 gap-2 mt-3">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-4 gap-2">
           <StatBox 
             label="PLAYS" 
             value={plays}

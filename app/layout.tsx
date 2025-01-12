@@ -21,9 +21,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head />
-      <body className={`${poppins.className} antialiased min-h-screen bg-gradient-to-b from-[#141414] to-[#1f1f1f]`}>
-        <Header />
-        {children}
+      <body className={`${poppins.className} antialiased min-h-screen bg-[#0A0B0D] relative`}>
+        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-[#1A1B1E] via-black to-[#1A1B1E] opacity-90" />
+        <div className="relative">
+          <Header />
+          {children}
+        </div>
       </body>
     </html>
   );
