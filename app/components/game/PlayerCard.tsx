@@ -1,7 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Dice from './Dice';
-import DiceModal from './DiceModal';
 import BetControls from './BetControls';
 import PlayerStatus from './PlayerStatus';
 import StatBox from './StatBox';
@@ -9,6 +8,7 @@ import { FiSettings, FiMinus, FiPlus } from 'react-icons/fi';
 import BetSettingsModal from './BetSettingsModal';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import DiceModel from './DiceModel';
 
 // Dynamic import with SSR disabled
 const Dice3D = dynamic(() => import('./3d/Dice3D'), {
@@ -64,7 +64,6 @@ export default function PlayerCard({
   diceValues = [3]
 }: PlayerCardProps) {
   const [currentBet, setCurrentBet] = useState(0.1);
-  const [showDiceModal, setShowDiceModal] = useState(false);
   const [isRolling, setIsRolling] = useState(false);
   const [showBetSettings, setShowBetSettings] = useState(false);
   const [localDiceValues, setLocalDiceValues] = useState<number[]>([3]);
@@ -82,7 +81,6 @@ export default function PlayerCard({
   };
 
   const handleRoll = async () => {
-    setShowDiceModal(true);
     setIsRolling(true);
     
     // Generate random values for each die
@@ -130,7 +128,7 @@ export default function PlayerCard({
             P{playerNumber}
           </div>
           <div>
-            <div className="text-white font-bold text-sm">Player {playerNumber}</div>
+            <div className="text-white font-bold text-sm">PLAYER {playerNumber}</div>
             <div className="text-gray-400 text-[10px]">{walletAddress}</div>
           </div>
         </div>
@@ -141,7 +139,7 @@ export default function PlayerCard({
       </div>
 
       {/* Status */}
-      <div className="mb-2 shrink-0">
+      <div className="mb-2 shrink-0 relative">
         <PlayerStatus 
           isActive={isActive}
           hasRolled={hasRolled}
@@ -151,7 +149,7 @@ export default function PlayerCard({
       </div>
 
       {/* Dice Section */}
-      <div className="relative flex-1 min-h-0 mb-2">
+      <div className="relative flex-1 min-h-0 mb-2 z-0">
         <div className="absolute inset-0 bg-gradient-to-br from-[#1E2024] to-[#141619] rounded-2xl" />
         
         {/* Retro Corner Accents */}
@@ -174,23 +172,42 @@ export default function PlayerCard({
           </div>
         </div>
         
-        {/* Add CRT screen effect */}
-        <div className="absolute inset-0 crt-screen rounded-2xl"></div>
-        
-        {/* Dice container - adjusted padding */}
-        <div className="absolute inset-4">
-          {use3D ? (
-            <Dice3D
-              count={diceCount}
-              values={localDiceValues}
-              isRolling={isRolling}
-              onRollComplete={() => setIsRolling(false)}
-            />
-          ) : (
-            <div className="relative z-10 w-full h-full flex items-center justify-center">
-              <Dice values={localDiceValues} isRolling={isRolling} />
-            </div>
-          )}
+        {/* Dice Display Area */}
+        <div className="relative aspect-square w-full max-w-[400px] mx-auto mb-4 overflow-visible">
+          {/* Red frame corners */}
+          <div className="absolute top-0 left-0 w-8 h-8 border-l-2 border-t-2 border-[#FF0000]/50"></div>
+          <div className="absolute top-0 right-0 w-8 h-8 border-r-2 border-t-2 border-[#FF0000]/50"></div>
+          <div className="absolute bottom-0 left-0 w-8 h-8 border-l-2 border-b-2 border-[#FF0000]/50"></div>
+          <div className="absolute bottom-0 right-0 w-8 h-8 border-r-2 border-b-2 border-[#FF0000]/50"></div>
+
+          {/* CRT screen effect */}
+          <div className="absolute inset-0 crt-screen rounded-2xl"></div>
+          
+          {/* Dice container with increased space for overflow */}
+          <div className="absolute inset-[-50px] flex items-center justify-center overflow-visible">
+            {use3D ? (
+              <div className="w-full h-full flex items-center justify-center transform scale-[1.2] relative z-[9999]"
+                   style={{ 
+                     transformStyle: 'preserve-3d', 
+                     transform: `perspective(1000px) translateZ(${diceCount === 3 ? '22px' : '36px'})` 
+                   }}>
+                <Dice3D
+                  count={diceCount}
+                  values={localDiceValues}
+                  isRolling={isRolling}
+                  onRollComplete={() => setIsRolling(false)}
+                />
+              </div>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center transform scale-[1.2] relative z-[9999]"
+                   style={{ 
+                     transformStyle: 'preserve-3d', 
+                     transform: `perspective(1000px) translateZ(${diceCount === 3 ? '22px' : '36px'})` 
+                   }}>
+                <Dice values={localDiceValues} isRolling={isRolling} />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -222,8 +239,10 @@ export default function PlayerCard({
         
         <button
           onClick={handleRoll}
-          disabled={!isActive || hasRolled || currentBet > balance}
-          className="retro-button w-full py-3 text-lg font-bold text-black rounded-lg"
+          disabled={!isActive || hasRolled || currentBet > balance || playerNumber === 2}
+          className={`w-full py-3 text-lg font-bold rounded-lg transition-all duration-300 shadow-sm ${
+            playerNumber === 2 ? 'bg-gray-500 text-gray-300 cursor-not-allowed' : 'text-white bg-gradient-to-r from-[#fe8c00] to-[#f83600] hover:opacity-90'
+          }`}
         >
           {hasRolled ? 'Rolled' : 'Roll Dice'}
         </button>
@@ -250,15 +269,6 @@ export default function PlayerCard({
           </div>
         </div>
       </div>
-
-      {/* Dice Roll Modal */}
-      <DiceModal 
-        isOpen={showDiceModal}
-        onClose={() => setShowDiceModal(false)}
-        diceValue={diceValue}
-        isRolling={isRolling}
-        playerNumber={playerNumber}
-      />
 
       {/* BetSettings Modal */}
       {showBetSettings && (
