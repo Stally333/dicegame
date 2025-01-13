@@ -5,7 +5,7 @@ export default function Header() {
     <header className="w-full bg-[#1A1B1E]/80 backdrop-blur-xl border-b border-[#FFD700]/10 shadow-2xl">
       <div className="max-w-7xl mx-auto px-8 py-5 flex justify-between items-center">
         <div className="text-3xl font-bold text-white tracking-tight">
-          <span className="bg-gradient-to-r from-[#FFD700] to-[#FFA500] bg-clip-text text-transparent">SOL</span>
+          <span className="bg-gradient-to-r from-[#FFD700] to-[#FFA500] bg-clip-text text-transparent">TIGER</span>
           <span className="text-white/90">dice</span>
         </div>
         <nav className="flex items-center gap-10">

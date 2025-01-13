@@ -18,3 +18,360 @@ body {
 .animate-bounce-gentle {
   animation: bounce-gentle 2s ease-in-out infinite;
 } 
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out forwards;
+} 
+
+@keyframes pulse-gold {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.2);
+  }
+}
+
+.animate-pulse-gold {
+  animation: pulse-gold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+} 
+
+@keyframes ticker {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-ticker {
+  animation: ticker 20s linear infinite;
+} 
+
+/* LED Digital Display */
+.digital-number {
+  font-family: "DS-Digital", Consolas, monaco, monospace;
+  text-shadow: 
+    0 0 5px rgba(255, 0, 0, 0.7),
+    0 0 10px rgba(255, 0, 0, 0.5),
+    0 0 20px rgba(255, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.digital-number::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Scanline effect */
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.digital-number::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(255, 0, 0, 0.1);
+  animation: scanline 2s linear infinite;
+} 
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.95; }
+}
+
+.digital-number.score-changed {
+  animation: flicker 0.2s ease-in-out;
+} 
+
+@keyframes powerUp {
+  0% { opacity: 0; transform: scale(0.9); }
+  50% { opacity: 0.5; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.digital-number.power-up {
+  animation: powerUp 0.5s ease-out;
+} 
+
+.segment-display {
+  background: linear-gradient(180deg, 
+    rgba(255, 0, 0, 0.2) 0%,
+    rgba(255, 0, 0, 0.1) 50%,
+    rgba(255, 0, 0, 0.05) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* CRT Screen Effect */
+.crt-screen {
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+}
+
+/* Retro Button Style */
+.retro-button {
+  background: linear-gradient(to bottom, #FFD700, #FFA500);
+  border: none;
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 -1px 1px rgba(255, 255, 255, 0.3) inset,
+    0 1px 1px rgba(0, 0, 0, 0.2) inset;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.4);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.retro-button:hover {
+  background: linear-gradient(to bottom, #FFA500, #FFD700);
+  transform: translateY(-1px);
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    0 -1px 1px rgba(255, 255, 255, 0.3) inset,
+    0 1px 1px rgba(0, 0, 0, 0.2) inset;
+}
+
+.retro-button:active {
+  transform: translateY(1px);
+  box-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    0 -1px 1px rgba(255, 255, 255, 0.3) inset,
+    0 1px 1px rgba(0, 0, 0, 0.2) inset;
+}
+
+.retro-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  background: linear-gradient(to bottom, #ccc, #999);
+  box-shadow: none;
+}
+
+/* Add shine effect */
+.retro-button::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transform: rotate(45deg);
+  transition: all 0.3s ease;
+}
+
+.retro-button:hover::after {
+  animation: shine 1.5s infinite;
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) rotate(45deg);
+  }
+}
+
+/* Arcade Cabinet Frame */
+.arcade-frame {
+  background: repeating-linear-gradient(
+    45deg,
+    #1a1a1a,
+    #1a1a1a 10px,
+    #222 10px,
+    #222 20px
+  );
+  border: 4px solid #333;
+  box-shadow: 
+    0 0 0 4px #222,
+    0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Retro Text Effect */
+.retro-text {
+  color: #FFD700;
+  text-shadow:
+    2px 2px 0px #FF4500,
+    4px 4px 0px #000;
+  letter-spacing: 2px;
+} 
+
+/* Neon Dice Effect */
+.neon-dice {
+  filter: drop-shadow(0 0 2px #FF0000)
+          drop-shadow(0 0 4px #FF0000)
+          drop-shadow(0 0 6px #FF0000);
+}
+
+/* Arcade Screen Flicker */
+@keyframes screen-flicker {
+  0% { opacity: 1; }
+  1% { opacity: 0.8; }
+  2% { opacity: 1; }
+  8% { opacity: 0.9; }
+  9% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+.arcade-screen {
+  animation: screen-flicker 10s infinite;
+}
+
+/* Insert Coin Text */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.insert-coin {
+  animation: blink 2s step-end infinite;
+  font-family: "Press Start 2P", monospace;
+  color: #FFD700;
+  text-shadow: 0 0 5px #FFD700;
+} 
+
+/* Add these new animations */
+@keyframes pulse-gentle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.1;
+  }
+}
+
+.animate-pulse-gentle {
+  animation: pulse-gentle 2s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+} 
+
+@keyframes roll-3d {
+  0% {
+    transform: rotateX(0) rotateY(0);
+  }
+  25% {
+    transform: rotateX(180deg) rotateY(90deg);
+  }
+  50% {
+    transform: rotateX(360deg) rotateY(180deg);
+  }
+  75% {
+    transform: rotateX(540deg) rotateY(270deg);
+  }
+  100% {
+    transform: rotateX(720deg) rotateY(360deg);
+  }
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.rotate-y-12 {
+  transform: rotateY(12deg);
+}
+
+.rotate-x-12 {
+  transform: rotateX(12deg);
+}
+
+.animate-roll-3d {
+  animation: roll-3d 1s ease-in-out;
+} 
+
+/* Add these new animations for the dealer message box */
+@keyframes messageAppear {
+  0% { 
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dealer-message {
+  animation: messageAppear 0.3s ease-out forwards;
+}
+
+/* Add a subtle glow effect for the dealer frame */
+@keyframes frameGlow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+  }
+}
+
+.dealer-frame {
+  animation: frameGlow 3s ease-in-out infinite;
+} 
+
+/* Add this to your existing styles */
+@font-face {
+  font-family: 'PixelFont';
+  src: url('/fonts/PressStart2P-Regular.ttf') format('truetype');
+}
+
+.font-pixel {
+  font-family: 'PixelFont', monospace;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: none;
+} 

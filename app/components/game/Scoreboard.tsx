@@ -2,147 +2,170 @@ import BetHistory from './BetHistory';
 import GameStats from './GameStats';
 import StatBox from './StatBox';
 import Image from 'next/image';
+import LiveScoreboard from './LiveScoreboard';
 
-interface ScoreboardProps {
-  player1Score: number;
-  player2Score: number;
-  currentRound: number;
-  totalRounds: number;
-  betHistory: Array<{
-    round: number;
-    player1Roll: number;
-    player2Roll: number;
-    betAmount: number;
-    winner: 1 | 2 | 'tie';
-  }>;
-  totalPot: number;
-  highestRoll: number;
-  totalRolls: number;
-  player1WinRate?: number;
-  player2WinRate?: number;
-  player1AvgBet?: number;
-  player2AvgBet?: number;
-  bettingPhase?: boolean;
-  timeLeft?: number;
-  currentBets?: { player1: number; player2: number };
-  onPlaceBet?: (player: 1 | 2, amount: number) => void;
+function calculateWinStreak(history: Array<{winner: 1 | 2 | 'tie'}>, playerNumber: 1 | 2): number {
+  let streak = 0;
+  for (let i = history.length - 1; i >= 0; i--) {
+    if (history[i].winner === playerNumber) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+  return streak;
 }
 
-export default function Scoreboard({ 
-  player1Score = 0, 
-  player2Score = 0, 
-  currentRound = 1, 
-  totalRounds = 5,
-  betHistory = [],
-  totalPot = 0,
-  highestRoll = 0,
-  totalRolls = 0,
-  player1WinRate = 0,
-  player2WinRate = 0,
-  player1AvgBet = 0,
-  player2AvgBet = 0,
-  bettingPhase = false,
-  timeLeft = 30,
-  currentBets = { player1: 0, player2: 0 },
-  onPlaceBet,
+function calculateTotalWon(history: Array<{winner: 1 | 2 | 'tie', betAmount: number}>, playerNumber: 1 | 2): number {
+  return history.reduce((total, current) => {
+    if (current.winner === playerNumber) {
+      return total + current.betAmount * 2;
+    }
+    return total;
+  }, 0);
+}
+
+interface ScoreboardProps {
+  player1: string;
+  player2: string;
+  round: number;
+  totalRounds: number;
+  player1Bet: number;
+  player2Bet: number;
+  highestRoll: number;
+  totalRolls: number;
+}
+
+export default function Scoreboard({
+  player1,
+  player2,
+  round,
+  totalRounds,
+  player1Bet,
+  player2Bet,
+  highestRoll,
+  totalRolls
 }: ScoreboardProps) {
-  const titleStyles = "flex items-center justify-start pl-64 mb-4 relative";
-  const tigerStyles = "absolute -top-32 -left-16 w-[240px] h-[240px] animate-bounce-gentle z-10";
-  const headingStyles = `
-    absolute top-[-8px] right-1 text-4xl font-bold
-    bg-gradient-to-r from-[#FFD700] to-[#FFA500]
-    bg-clip-text text-transparent
-    tracking-tight
-    hover:scale-105 transition-transform duration-200
-    drop-shadow-[0_0_10px_rgba(255,215,0,0.3)]
-    animate-text-shine
-  `;
-
   return (
-    <div className="bg-[#1A1B1E]/95 backdrop-blur-sm rounded-2xl p-6 border border-gray-800/50 shadow-xl h-full flex flex-col">
-      {/* Title with Tiger Avatar */}
-      <div className={titleStyles}>
-        <Image
-          src="/images/croupier-tiger.png"
-          alt="Croupier Tiger"
-          width={240}
-          height={240}
-          className={tigerStyles}
-        />
-        <h2 className={headingStyles}>Scoreboard</h2>
-      </div>
-      
-      {/* Betting Phase Timer - Added top margin */}
-      {bettingPhase && (
-        <div className="bg-[#FFD700]/10 rounded-lg p-3 mb-4 mt-8">
-          <div className="text-center text-sm text-gray-400 mb-1">Betting Phase</div>
-          <div className="text-2xl font-bold text-center text-[#FFD700]">
-            {timeLeft}s
-          </div>
-          <div className="h-1 bg-gray-800 rounded-full mt-1">
-            <div 
-              className="h-full bg-[#FFD700] rounded-full transition-all duration-1000"
-              style={{ width: `${(timeLeft / 30) * 100}%` }}
-            />
-          </div>
+    <div className="bg-[#1A1B1E]/80 backdrop-blur-sm rounded-xl p-4 h-full flex flex-col min-w-[480px] max-h-[calc(100vh-8rem)]">
+      {/* Round Info - Made more compact */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-gray-400 text-base font-medium">
+          ROUND {round}/{totalRounds}
         </div>
-      )}
-
-      {/* Score Display - Reduced vertical spacing */}
-      <div className="text-5xl font-bold flex items-center justify-center gap-6 mb-4">
-        <div className="text-center">
-          <span className="text-[#FFD700]">{player1Score}</span>
-          {bettingPhase && (
-            <div className="text-xs text-gray-400 mt-1">
-              Bet: {currentBets.player1} SOL
-            </div>
-          )}
-        </div>
-        <span className="text-gray-400 text-3xl">vs</span>
-        <div className="text-center">
-          <span className="text-[#FFD700]">{player2Score}</span>
-          {bettingPhase && (
-            <div className="text-xs text-gray-400 mt-1">
-              Bet: {currentBets.player2} SOL
-            </div>
-          )}
+        <div className="text-[#FF0000] text-base font-bold animate-pulse">
+          ROLLING
         </div>
       </div>
 
-      {/* Recent Rolls - Reduced padding and max height */}
-      <div className="bg-black/20 rounded-xl p-3 mb-4">
-        <h3 className="text-gray-400 mb-2">Recent Rolls</h3>
-        <div className="space-y-1 max-h-[120px] overflow-y-auto">
-          {betHistory.map((bet, index) => (
-            <div 
-              key={index}
-              className="flex items-center justify-between text-sm p-2 rounded bg-black/20"
-            >
-              <div className={`${bet.winner === 1 ? 'text-[#FFD700]' : 'text-gray-400'}`}>
-                P1: {bet.player1Roll}
-              </div>
-              <div className="text-gray-600">{bet.betAmount} SOL</div>
-              <div className={`${bet.winner === 2 ? 'text-[#FFD700]' : 'text-gray-400'}`}>
-                P2: {bet.player2Roll}
+      {/* Dealer Tiger Section - Adjusted height */}
+      <div className="relative flex items-center justify-center py-2 flex-1">
+        {/* Dealer Frame - Height constrained */}
+        <div className="relative w-full h-full max-w-[600px]">
+          {/* Frame Border */}
+          <div className="absolute inset-0 border-2 border-[#FFD700]/20 rounded-xl dealer-frame bg-black/40">
+            {/* Corner Accents */}
+            <div className="absolute -top-1 -left-1 w-4 h-4 border-t-2 border-l-2 border-[#FFD700]"></div>
+            <div className="absolute -top-1 -right-1 w-4 h-4 border-t-2 border-r-2 border-[#FFD700]"></div>
+            <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-2 border-l-2 border-[#FFD700]"></div>
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-2 border-r-2 border-[#FFD700]"></div>
+
+            {/* Classic Speech Bubble */}
+            <div className="absolute top-4 right-4 z-10">
+              <div className="
+                relative 
+                bg-white 
+                px-6 py-3 
+                rounded-lg
+                min-w-[180px]
+                before:content-['']
+                before:absolute
+                before:bottom-[-10px]
+                before:left-[20px]
+                before:w-[20px]
+                before:h-[20px]
+                before:bg-white
+                before:skew-y-[-45deg]
+              ">
+                <p className="text-black text-sm font-pixel text-center">
+                  Let's roll the dice!
+                </p>
               </div>
             </div>
-          ))}
+
+            {/* VS and Round Info - Positioned relative to frame */}
+            <div className="absolute bottom-6 right-6 flex flex-col items-end">
+              <div className="digital-number text-[#FF0000] text-8xl mb-2 font-bold tracking-tighter drop-shadow-[0_0_10px_rgba(255,0,0,0.3)]">
+                VS
+              </div>
+              <div className="text-[#FFD700] text-2xl font-bold tracking-wider drop-shadow-[0_0_8px_rgba(255,215,0,0.4)]">
+                Round {round} of {totalRounds}
+              </div>
+            </div>
+          </div>
+
+          {/* Content Container - Tiger at 1/3 position */}
+          <div className="relative h-full flex flex-col justify-center">
+            <div className="relative w-full flex">
+              {/* Tiger Container - Without VS text */}
+              <div className="relative ml-[calc(25%-155px)]">
+                <div className="absolute inset-0 bg-gradient-radial from-[#FFD700]/20 to-transparent rounded-full blur-xl"></div>
+                <Image 
+                  src="/tiger.png" 
+                  alt="Dealer Tiger" 
+                  width={310}
+                  height={310}
+                  className="object-contain animate-bounce-gentle drop-shadow-[0_0_15px_rgba(255,215,0,0.5)]"
+                  priority
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Game Stats - Reduced padding */}
-      <div className="grid grid-cols-3 gap-3 mt-auto">
-        <div className="bg-black/20 rounded-lg p-2 text-center">
-          <div className="text-[#FFD700] text-lg font-bold">{totalPot} SOL</div>
-          <div className="text-gray-400 text-xs">Total Pot</div>
+      {/* Score Display - More compact */}
+      <div className="grid grid-cols-[1fr_auto_1fr] gap-4 mb-3">
+        <div className="bg-black/50 rounded-lg p-3">
+          <div className="digital-number text-[#FF0000] text-4xl text-center">00</div>
+          <div className="text-[#FF0000]/60 text-xs text-center">{player1Bet.toFixed(2)} SOL</div>
         </div>
-        <div className="bg-black/20 rounded-lg p-2 text-center">
-          <div className="text-white text-lg font-bold">{highestRoll}</div>
-          <div className="text-gray-400 text-xs">Highest Roll</div>
+        <div className="text-[#FF0000] text-2xl font-bold self-center">VS</div>
+        <div className="bg-black/50 rounded-lg p-3">
+          <div className="digital-number text-[#FF0000] text-4xl text-center">00</div>
+          <div className="text-[#FF0000]/60 text-xs text-center">{player2Bet.toFixed(2)} SOL</div>
         </div>
-        <div className="bg-black/20 rounded-lg p-2 text-center">
-          <div className="text-white text-lg font-bold">{totalRolls}</div>
-          <div className="text-gray-400 text-xs">Total Rolls</div>
+      </div>
+
+      {/* Player Status - More compact */}
+      <div className="grid grid-cols-2 gap-3 mb-3">
+        <div className="bg-black/30 rounded-lg px-3 py-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[#FFD700] text-sm font-medium">• Player 1</span>
+            <span className="text-gray-400 uppercase text-xs font-bold">WAITING</span>
+          </div>
+        </div>
+        <div className="bg-black/30 rounded-lg px-3 py-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[#FFD700] text-sm font-medium">• Player 2</span>
+            <span className="text-gray-400 uppercase text-xs font-bold">WAITING</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Game Stats - More compact */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-black/30 rounded-lg p-2 text-center">
+          <div className="text-[#FFD700] text-base font-bold">{(player1Bet + player2Bet).toFixed(2)}</div>
+          <div className="text-gray-500 text-xs">Total Pot SOL</div>
+        </div>
+        <div className="bg-black/30 rounded-lg p-2 text-center">
+          <div className="text-white text-base font-bold">{highestRoll}</div>
+          <div className="text-gray-500 text-xs">Highest Roll</div>
+        </div>
+        <div className="bg-black/30 rounded-lg p-2 text-center">
+          <div className="text-white text-base font-bold">{totalRolls}</div>
+          <div className="text-gray-500 text-xs">Total Rolls</div>
         </div>
       </div>
     </div>

@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 interface LiveScoreboardProps {
   player1: {
     name: string;
@@ -52,47 +54,81 @@ export default function LiveScoreboard({
         <div className="text-gray-400 uppercase text-xs">{round.phase}</div>
       </div>
 
-      {/* Score Display - Enhanced Digital LED style */}
-      <div className="px-4 pt-8 pb-2">
+      {/* Dealer Tiger Section - Made smaller and added frame */}
+      <div className="relative px-4 py-6">
+        <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#FFD700]/30 to-transparent"></div>
+        <div className="relative w-64 h-64 mx-auto"> {/* Reduced size from default */}
+          {/* Dealer Frame */}
+          <div className="absolute inset-0 border-2 border-[#FFD700]/20 rounded-xl">
+            {/* Corner Accents */}
+            <div className="absolute -top-1 -left-1 w-4 h-4 border-t-2 border-l-2 border-[#FFD700]"></div>
+            <div className="absolute -top-1 -right-1 w-4 h-4 border-t-2 border-r-2 border-[#FFD700]"></div>
+            <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-2 border-l-2 border-[#FFD700]"></div>
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-2 border-r-2 border-[#FFD700]"></div>
+          </div>
+
+          {/* Tiger Image */}
+          <div className="relative w-full h-full flex items-center justify-center">
+            <div className="absolute inset-0 bg-gradient-radial from-[#FFD700]/10 to-transparent rounded-full blur-xl"></div>
+            <Image 
+              src="/tiger.png" 
+              alt="Dealer Tiger" 
+              width={230}
+              height={230}
+              className="object-contain animate-bounce-gentle drop-shadow-[0_0_15px_rgba(255,215,0,0.5)]"
+              priority
+            />
+          </div>
+
+          {/* Message Box */}
+          <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 w-[280px]">
+            <div className="relative">
+              {/* Message Box Background */}
+              <div className="bg-black/80 border border-[#FFD700]/30 rounded-lg p-3 shadow-lg">
+                <p className="text-[#FFD700] text-sm text-center font-medium">
+                  {round.phase === 'ROLLING' ? "Place your bets!" : "Good luck, players!"}
+                </p>
+              </div>
+              {/* Speech Triangle */}
+              <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4">
+                <div className="w-4 h-4 bg-black/80 border-l border-t border-[#FFD700]/30 rotate-45"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Score Display */}
+      <div className="px-4 pb-4">
         <div className="grid grid-cols-[1fr_auto_1fr] gap-4">
           {/* Player 1 Score */}
           <div className="text-center relative">
-            <div className="digital-number segment-display text-[96px] font-bold text-[#FF0000] leading-none tracking-tighter bg-black/40 p-4 rounded-lg border border-red-900/20">
+            <div className="digital-number segment-display text-[86px] font-bold text-[#FF0000] leading-none tracking-tighter bg-black/40 p-4 rounded-lg border border-red-900/20">
               {String(player1.score).padStart(2, '0')}
             </div>
             <div className="text-[#FF0000]/80 font-mono text-sm mt-1 animate-pulse">
               {player1.currentBet.toFixed(2)} SOL
             </div>
-            {/* Add retro corner accents */}
-            <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#FF0000]/30"></div>
-            <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#FF0000]/30"></div>
-            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#FF0000]/30"></div>
-            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#FF0000]/30"></div>
           </div>
 
           {/* VS */}
           <div className="flex items-center">
-            <span className="text-gray-600 text-2xl font-bold digital-number animate-pulse">VS</span>
+            <span className="text-gray-600 text-xl font-bold digital-number animate-pulse">VS</span>
           </div>
 
           {/* Player 2 Score */}
           <div className="text-center relative">
-            <div className="digital-number segment-display text-[96px] font-bold text-[#FF0000] leading-none tracking-tighter bg-black/40 p-4 rounded-lg border border-red-900/20">
+            <div className="digital-number segment-display text-[86px] font-bold text-[#FF0000] leading-none tracking-tighter bg-black/40 p-4 rounded-lg border border-red-900/20">
               {String(player2.score).padStart(2, '0')}
             </div>
             <div className="text-[#FF0000]/80 font-mono text-sm mt-1 animate-pulse">
               {player2.currentBet.toFixed(2)} SOL
             </div>
-            {/* Add retro corner accents */}
-            <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#FF0000]/30"></div>
-            <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#FF0000]/30"></div>
-            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#FF0000]/30"></div>
-            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#FF0000]/30"></div>
           </div>
         </div>
       </div>
 
-      {/* Player Status - Reduced padding */}
+      {/* Player Status */}
       <div className="px-4 py-1 space-y-1">
         {[player1, player2].map((player, index) => (
           <div key={index} 
