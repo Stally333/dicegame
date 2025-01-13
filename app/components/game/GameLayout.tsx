@@ -1,13 +1,43 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PlayerCard from './PlayerCard';
 import Scoreboard from './Scoreboard';
+import { FaTrophy, FaHistory } from 'react-icons/fa';
+import { BiCoin } from 'react-icons/bi';
+import io from 'socket.io-client';
+import { Socket } from 'socket.io-client';
 
 export default function GameLayout() {
   const [player1DiceCount, setPlayer1DiceCount] = useState(1);
   const [player2DiceCount, setPlayer2DiceCount] = useState(1);
   const [player1DiceValues, setPlayer1DiceValues] = useState([3]);
   const [player2DiceValues, setPlayer2DiceValues] = useState([3]);
+  const [socket, setSocket] = useState<Socket | null>(null);
+
+  // Connect to WebSocket on component mount
+  useEffect(() => {
+    // For development, connect to local server
+    const newSocket = io('http://localhost:3001');
+    
+    newSocket.on('connect', () => {
+      console.log('Connected to game server');
+      setSocket(newSocket);
+    });
+
+    newSocket.on('game_state', (gameState: any) => {
+      console.log('Received game state:', gameState);
+      if (gameState.player1?.diceValues) {
+        setPlayer1DiceValues(gameState.player1.diceValues);
+      }
+      if (gameState.player2?.diceValues) {
+        setPlayer2DiceValues(gameState.player2.diceValues);
+      }
+    });
+
+    return () => {
+      if (newSocket) newSocket.close();
+    };
+  }, []);
 
   // Handle dice count changes for Player 1
   const handlePlayer1DiceCountChange = (count: number) => {
@@ -52,12 +82,30 @@ export default function GameLayout() {
             diceValues={player1DiceValues}
             onDiceCountChange={handlePlayer1DiceCountChange}
             use3D={true}
+            socket={socket}
           />
         </div>
 
         {/* Scoreboard and Game Modes Container */}
-        <div className="flex flex-col justify-center gap-4 h-[calc(100vh-8rem)]">
-          <div className="flex flex-col gap-4">
+        <div className="flex flex-col h-[calc(100vh-8rem)]">
+          {/* Game Mode Buttons - Aligned with top */}
+          <div className="flex gap-1.5 justify-center mb-4">
+            <button className="w-28 h-7 flex items-center justify-center text-xs font-bold text-white rounded-md bg-gradient-to-r from-[#fe8c00] to-[#f83600] hover:opacity-90 transition-all duration-300 shadow-sm">
+              <BiCoin className="text-sm mr-1" />
+              STAKING
+            </button>
+            <button className="w-28 h-7 flex items-center justify-center text-xs font-bold text-white rounded-md bg-gradient-to-r from-[#fe8c00] to-[#f83600] hover:opacity-90 transition-all duration-300 shadow-sm">
+              <FaTrophy className="text-sm mr-1" />
+              STATS
+            </button>
+            <button className="w-28 h-7 flex items-center justify-center text-xs font-bold text-white rounded-md bg-gradient-to-r from-[#fe8c00] to-[#f83600] hover:opacity-90 transition-all duration-300 shadow-sm">
+              <FaHistory className="text-sm mr-1" />
+              HISTORY
+            </button>
+          </div>
+
+          {/* Scoreboard */}
+          <div className="h-[calc(100vh-9.75rem)]">
             <Scoreboard
               player1="8xzt...3kj9"
               player2="2yfm...9p4r"
@@ -68,19 +116,6 @@ export default function GameLayout() {
               highestRoll={0}
               totalRolls={0}
             />
-
-            {/* Game Mode Buttons */}
-            <div className="flex flex-col gap-2">
-              <button className="retro-button py-2 text-sm font-bold text-black rounded-lg">
-                SOL BATTLE
-              </button>
-              <button className="retro-button py-2 text-sm font-bold text-black rounded-lg">
-                TOKEN ARENA
-              </button>
-              <button className="retro-button py-2 text-sm font-bold text-black rounded-lg">
-                HOUSE RUSH
-              </button>
-            </div>
           </div>
         </div>
 
@@ -97,6 +132,7 @@ export default function GameLayout() {
             diceValues={player2DiceValues}
             onDiceCountChange={handlePlayer2DiceCountChange}
             use3D={true}
+            socket={socket}
           />
         </div>
       </div>

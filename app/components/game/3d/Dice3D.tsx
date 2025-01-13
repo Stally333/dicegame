@@ -79,23 +79,24 @@ export default function Dice3D({ count = 1, values = [3], isRolling = false, onR
       scene.add(fillLight);
     }
 
-    // Update renderer size
+    // Update renderer size and pixel ratio
     if (rendererRef.current) {
       rendererRef.current.setSize(
         containerRef.current.clientWidth,
         containerRef.current.clientHeight
       );
+      rendererRef.current.setPixelRatio(window.devicePixelRatio);
     }
 
     // Setup camera
     const camera = new THREE.PerspectiveCamera(
-      60,
+      50,
       containerRef.current.clientWidth / containerRef.current.clientHeight,
       0.1,
       1000
     );
-    const cameraZ = 8 + (count - 1) * 2;
-    camera.position.set(0, 3, cameraZ);
+    const cameraZ = 10;
+    camera.position.set(0, 5, cameraZ);
     camera.lookAt(0, 0, 0);
 
     // Clear existing dice
@@ -109,11 +110,11 @@ export default function Dice3D({ count = 1, values = [3], isRolling = false, onR
     }
 
     // Create new dice
-    const spacing = 2.2;
+    const spacing = 3;
     const totalWidth = (count - 1) * spacing;
 
     for (let i = 0; i < count; i++) {
-      const geometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+      const geometry = new THREE.BoxGeometry(2.5, 2.5, 2.5);
       const value = values[i] || Math.floor(Math.random() * 6) + 1;
       
       const materials = [
@@ -129,14 +130,15 @@ export default function Dice3D({ count = 1, values = [3], isRolling = false, onR
       
       // Position dice
       const xPos = (i * spacing) - (totalWidth / 2);
-      const yPos = count === 3 && i === 1 ? 0.5 : 0; // Middle die raised for 3 dice
-      dice.position.set(xPos, yPos, 0);
+      const yPos = 0;
+      const zPos = 0;
+      dice.position.set(xPos, yPos, zPos);
       
-      // Random initial rotation
+      // Initial rotation
       dice.rotation.set(
-        Math.random() * Math.PI,
-        Math.random() * Math.PI,
-        Math.random() * Math.PI
+        Math.random() * Math.PI * 0.5,
+        Math.random() * Math.PI * 0.5,
+        Math.random() * Math.PI * 0.5
       );
       
       sceneRef.current?.add(dice);
@@ -148,25 +150,25 @@ export default function Dice3D({ count = 1, values = [3], isRolling = false, onR
     let time = 0;
 
     const animate = () => {
-      time += 0.016;
+      time += 0.008;
       animationFrameId = requestAnimationFrame(animate);
 
       if (isRolling) {
         diceRef.current.forEach((dice, index) => {
-          const speedMultiplier = 1 + index * 0.2;
-          const wobble = Math.sin(time * 5) * 0.2;
+          const speedMultiplier = 0.7 + index * 0.1;
+          const wobble = Math.sin(time * 3) * 0.15;
           
-          dice.rotation.x += (0.2 + wobble) * speedMultiplier;
-          dice.rotation.y += (0.3 + wobble) * speedMultiplier;
+          dice.rotation.x += (0.15 + wobble) * speedMultiplier;
+          dice.rotation.y += (0.2 + wobble) * speedMultiplier;
           dice.rotation.z += (0.1 + wobble) * speedMultiplier;
-          dice.position.y = Math.sin(time * 5 + index) * 0.3 + dice.position.y;
+          dice.position.y = Math.sin(time * 3 + index) * 0.2;
         });
       } else {
         diceRef.current.forEach((dice) => {
-          dice.rotation.x *= 0.95;
-          dice.rotation.y *= 0.95;
-          dice.rotation.z *= 0.95;
-          dice.position.y *= 0.92;
+          dice.rotation.x *= 0.97;
+          dice.rotation.y *= 0.97;
+          dice.rotation.z *= 0.97;
+          dice.position.y *= 0.94;
         });
       }
       
@@ -188,9 +190,10 @@ export default function Dice3D({ count = 1, values = [3], isRolling = false, onR
       className="w-full h-full"
       style={{ 
         background: 'transparent',
-        borderRadius: '12px',
-        overflow: 'hidden',
-        minHeight: '260px'
+        position: 'relative',
+        zIndex: 50,
+        overflow: 'visible',
+        pointerEvents: 'none'
       }}
     />
   );

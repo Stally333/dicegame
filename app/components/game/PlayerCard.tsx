@@ -9,6 +9,7 @@ import BetSettingsModal from './BetSettingsModal';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import DiceModel from './DiceModel';
+import { Socket } from 'socket.io-client';
 
 // Dynamic import with SSR disabled
 const Dice3D = dynamic(() => import('./3d/Dice3D'), {
@@ -40,6 +41,7 @@ interface PlayerCardProps {
   onDiceCountChange?: (count: number) => void;
   use3D?: boolean;
   diceValues?: number[];
+  socket: Socket | null;
 }
 
 export default function PlayerCard({ 
@@ -61,7 +63,8 @@ export default function PlayerCard({
   diceCount = 1,
   onDiceCountChange,
   use3D = false,
-  diceValues = [3]
+  diceValues = [3],
+  socket
 }: PlayerCardProps) {
   const [currentBet, setCurrentBet] = useState(0.1);
   const [isRolling, setIsRolling] = useState(false);
@@ -81,9 +84,11 @@ export default function PlayerCard({
   };
 
   const handleRoll = async () => {
+    if (!isActive || hasRolled || currentBet > balance) return;
+    
     setIsRolling(true);
     
-    // Generate random values for each die
+    // Generate random values for animation
     const newValues = Array(diceCount).fill(0).map(() => Math.floor(Math.random() * 6) + 1);
     setLocalDiceValues(newValues);
     
@@ -94,6 +99,25 @@ export default function PlayerCard({
     // Call the actual roll function
     onRoll?.();
   };
+
+  // Listen for roll events from server
+  useEffect(() => {
+    if (!socket) return;
+
+    // Handle roll results from server
+    const handleRollResult = (data: any) => {
+      console.log('Received roll result:', data);
+      if (data.playerNumber === playerNumber) {
+        setLocalDiceValues(data.diceValues);
+      }
+    };
+
+    socket.on('roll_result', handleRollResult);
+    
+    return () => {
+      socket.off('roll_result', handleRollResult);
+    };
+  }, [socket, playerNumber]);
 
   const playRollSound = () => {
     try {
@@ -149,48 +173,42 @@ export default function PlayerCard({
       </div>
 
       {/* Dice Section */}
-      <div className="relative flex-1 min-h-0 mb-2 z-0">
+      <div className="relative flex-1 min-h-0 mb-2 overflow-visible">
+        {/* Main background - lowest layer */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#1E2024] to-[#141619] rounded-2xl" />
         
-        {/* Retro Corner Accents */}
-        <div className="absolute inset-0">
-          <div className="absolute top-0 left-0 w-6 h-6">
-            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#FF0000]/40 to-transparent" />
-            <div className="absolute top-0 left-0 h-full w-[2px] bg-gradient-to-b from-[#FF0000]/40 to-transparent" />
+        {/* Red corner lines - middle layer */}
+        <div className="absolute inset-[-2px] z-10">
+          {/* Top-left corner */}
+          <div className="absolute top-0 left-0">
+            <div className="absolute top-0 left-0 w-[128px] h-[2px] bg-[#FF0000]/40" />
+            <div className="absolute top-0 left-0 w-[2px] h-[128px] bg-[#FF0000]/40" />
           </div>
-          <div className="absolute top-0 right-0 w-6 h-6">
-            <div className="absolute top-0 right-0 w-full h-[2px] bg-gradient-to-l from-[#FF0000]/40 to-transparent" />
-            <div className="absolute top-0 right-0 h-full w-[2px] bg-gradient-to-b from-[#FF0000]/40 to-transparent" />
+          
+          {/* Top-right corner */}
+          <div className="absolute top-0 right-0">
+            <div className="absolute top-0 right-0 w-[128px] h-[2px] bg-[#FF0000]/40" />
+            <div className="absolute top-0 right-0 w-[2px] h-[128px] bg-[#FF0000]/40" />
           </div>
-          <div className="absolute bottom-0 left-0 w-6 h-6">
-            <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#FF0000]/40 to-transparent" />
-            <div className="absolute bottom-0 left-0 h-full w-[2px] bg-gradient-to-t from-[#FF0000]/40 to-transparent" />
+          
+          {/* Bottom-left corner */}
+          <div className="absolute bottom-0 left-0">
+            <div className="absolute bottom-0 left-0 w-[128px] h-[2px] bg-[#FF0000]/40" />
+            <div className="absolute bottom-0 left-0 w-[2px] h-[128px] bg-[#FF0000]/40" />
           </div>
-          <div className="absolute bottom-0 right-0 w-6 h-6">
-            <div className="absolute bottom-0 right-0 w-full h-[2px] bg-gradient-to-l from-[#FF0000]/40 to-transparent" />
-            <div className="absolute bottom-0 right-0 h-full w-[2px] bg-gradient-to-t from-[#FF0000]/40 to-transparent" />
+          
+          {/* Bottom-right corner */}
+          <div className="absolute bottom-0 right-0">
+            <div className="absolute bottom-0 right-0 w-[128px] h-[2px] bg-[#FF0000]/40" />
+            <div className="absolute bottom-0 right-0 w-[2px] h-[128px] bg-[#FF0000]/40" />
           </div>
         </div>
-        
-        {/* Dice Display Area */}
-        <div className="relative aspect-square w-full max-w-[400px] mx-auto mb-4 overflow-visible">
-          {/* Red frame corners */}
-          <div className="absolute top-0 left-0 w-8 h-8 border-l-2 border-t-2 border-[#FF0000]/50"></div>
-          <div className="absolute top-0 right-0 w-8 h-8 border-r-2 border-t-2 border-[#FF0000]/50"></div>
-          <div className="absolute bottom-0 left-0 w-8 h-8 border-l-2 border-b-2 border-[#FF0000]/50"></div>
-          <div className="absolute bottom-0 right-0 w-8 h-8 border-r-2 border-b-2 border-[#FF0000]/50"></div>
 
-          {/* CRT screen effect */}
-          <div className="absolute inset-0 crt-screen rounded-2xl"></div>
-          
-          {/* Dice container with increased space for overflow */}
-          <div className="absolute inset-[-50px] flex items-center justify-center overflow-visible">
+        {/* Dice Container - top layer with extended bounds */}
+        <div className="absolute inset-0 flex items-center justify-center z-20">
+          <div className="w-full h-full flex items-center justify-center pointer-events-none">
             {use3D ? (
-              <div className="w-full h-full flex items-center justify-center transform scale-[1.2] relative z-[9999]"
-                   style={{ 
-                     transformStyle: 'preserve-3d', 
-                     transform: `perspective(1000px) translateZ(${diceCount === 3 ? '22px' : '36px'})` 
-                   }}>
+              <div className="transform scale-[1.2] relative z-30 w-full h-full max-w-[200px] max-h-[200px]">
                 <Dice3D
                   count={diceCount}
                   values={localDiceValues}
@@ -199,11 +217,7 @@ export default function PlayerCard({
                 />
               </div>
             ) : (
-              <div className="w-full h-full flex items-center justify-center transform scale-[1.2] relative z-[9999]"
-                   style={{ 
-                     transformStyle: 'preserve-3d', 
-                     transform: `perspective(1000px) translateZ(${diceCount === 3 ? '22px' : '36px'})` 
-                   }}>
+              <div className="relative z-30">
                 <Dice values={localDiceValues} isRolling={isRolling} />
               </div>
             )}
@@ -212,10 +226,15 @@ export default function PlayerCard({
       </div>
 
       {/* Controls Section */}
-      <div className="space-y-2 shrink-0">
-        {/* Bet Amount */}
+      <div className="space-y-2 shrink-0 relative z-30">
+        {/* Bet Amount Section */}
         <div className="flex items-center justify-between">
-          <span className="text-gray-400 text-sm">Bet Amount:</span>
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400 text-sm">Bet Amount:</span>
+            <span className="text-[#FFD700] text-lg font-bold">
+              {Number(currentBet).toFixed(2)} SOL
+            </span>
+          </div>
           <button
             onClick={() => setShowBetSettings(true)}
             className="p-1.5 text-gray-400 hover:text-[#FFD700] transition-colors"
@@ -223,10 +242,6 @@ export default function PlayerCard({
             <FiSettings className="w-4 h-4" />
           </button>
         </div>
-        
-        <span className="text-[#FFD700] text-lg font-bold">
-          {Number(currentBet).toFixed(2)} SOL
-        </span>
         
         <BetControls
           currentBet={currentBet}
@@ -239,12 +254,14 @@ export default function PlayerCard({
         
         <button
           onClick={handleRoll}
-          disabled={!isActive || hasRolled || currentBet > balance || playerNumber === 2}
-          className={`w-full py-3 text-lg font-bold rounded-lg transition-all duration-300 shadow-sm ${
-            playerNumber === 2 ? 'bg-gray-500 text-gray-300 cursor-not-allowed' : 'text-white bg-gradient-to-r from-[#fe8c00] to-[#f83600] hover:opacity-90'
+          disabled={!isActive || hasRolled || currentBet > balance || isRolling}
+          className={`w-full py-3 text-lg font-bold rounded-lg transition-all duration-300 relative z-30 ${
+            !isActive || hasRolled || currentBet > balance || isRolling
+              ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+              : 'text-white bg-gradient-to-r from-[#fe8c00] to-[#f83600] hover:opacity-90'
           }`}
         >
-          {hasRolled ? 'Rolled' : 'Roll Dice'}
+          {isRolling ? 'Rolling...' : hasRolled ? 'Rolled' : 'Roll Dice'}
         </button>
 
         {/* Number of Dice Controls */}
